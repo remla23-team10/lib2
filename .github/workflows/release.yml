@@ -1,0 +1,42 @@
+name: Release to PyPi
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+
+jobs:
+  mvn-deploy:
+    runs-on: ubuntu-22.04
+    steps:
+
+      - uses: actions/checkout@v3
+
+      # This actions sets up java and necessary Maven configuration
+      # to add the github registry and login, under id github
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.10'
+
+      - name: Parse version info from tag
+        run: |
+          # GITHUB_REF is like refs/tags/v2.3.5, so strip the first 11 chars
+          VERSION=${GITHUB_REF:11}
+          MAJOR=`echo "$VERSION" | cut -d . -f 1`
+          MINOR=`echo "$VERSION" | cut -d . -f 2`
+          PATCH=`echo "$VERSION" | cut -d . -f 3`
+          echo "version=$VERSION" >> $GITHUB_ENV
+          echo "version_major=$MAJOR" >> $GITHUB_ENV
+          echo "version_minor=$MINOR" >> $GITHUB_ENV
+          echo "version_patch=$PATCH" >> $GITHUB_ENV
+
+      - name: Update pyproject.toml version to tag version
+        run: sed -i 's/version = "1.0.0"/version = "${{ env.version }}"/' pyproject.toml
+
+      - name: build package
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+            
+      - name: Publish to PyPi
+        run: |
+          python -m pip install --upgrade twine
+          python -m twine upload dist/* --skip-existing --verbose -u __token__ -p ${{ secrets.PYPI_TOKEN }}
