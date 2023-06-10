@@ -14,7 +14,7 @@ jobs:
       # to add the github registry and login, under id github
       - uses: actions/setup-python@v3
         with:
-          python-version: '3.10'
+          python-version: '3.9'
 
       - name: Parse version info from tag
         run: |
