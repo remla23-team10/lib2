@@ -10,8 +10,7 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      # This actions sets up java and necessary Maven configuration
-      # to add the github registry and login, under id github
+      # This actions sets up python and installs the required dependencies from pyproject.toml
       - uses: actions/setup-python@v3
         with:
           python-version: '3.9'
